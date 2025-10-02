@@ -1,11 +1,400 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <title>Sancak Vitrin Demo</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SANCAK • Vitrin Demo</title>
+  <style>
+    :root{
+      --bg:#0f1115; --card:#161a22; --muted:#8b95a7; --text:#e6ebf5; --accent:#4ade80;
+      --accent-2:#60a5fa; --warn:#f59e0b; --danger:#ef4444; --ok:#22c55e; --chip:#1f2430; --border:#252b36;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      color:var(--text);
+      background: #0f1115 url("turk_bayrak.png") no-repeat center center fixed;
+      background-size: cover;
+    }
+    /* Header */
+    header.top{
+      position:sticky;top:0;z-index:5;
+      display:flex;align-items:center;justify-content:center;gap:12px;
+      padding:14px 16px;background:rgba(15,17,21,.9);border-bottom:1px solid var(--border);
+      backdrop-filter: blur(6px);
+    }
+    header .brand{font-weight:900;letter-spacing:.4px}
+    header .flag{position:absolute;right:16px;top:10px;font-size:20px}
+    /* Layout */
+    .wrap{display:grid;grid-template-columns:320px 1fr 380px;gap:16px;padding:16px;min-height:100vh;background:rgba(15,17,21,0.92)}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+    .title{font-weight:800;font-size:18px;margin:0 0 12px}
+    .muted{color:var(--muted)}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .chip{background:var(--chip);border:1px solid var(--border);padding:6px 10px;border-radius:999px;font-size:12px}
+    .btn{cursor:pointer;border:none;border-radius:10px;padding:10px 12px;font-weight:700;background:#1e293b;color:var(--text);border:1px solid var(--border);transition:transform .06s ease,opacity .2s}
+    .btn:hover{transform:translateY(-1px);opacity:.95}
+    .btn.acc{background:rgba(74,222,128,.12);border-color:#1c2a21}
+    .btn.info{background:rgba(96,165,250,.12);border-color:#1b2740}
+    .btn.warn{background:rgba(245,158,11,.12);border-color:#3a2a12}
+    .btn.danger{background:rgba(239,68,68,.12);border-color:#3a1c1c}
+    .btn.ghost{background:transparent}
+    .divider{height:1px;background:var(--border);margin:10px 0}
+    .tag{padding:4px 8px;border:1px solid var(--border);border-radius:8px;background:#0d1218;font-size:12px}
+    a.inline{color:var(--accent-2);text-decoration:none;border-bottom:1px dashed rgba(96,165,250,.5)}
+    .right-sticky{position:sticky;top:12px}
+
+    /* Search & list */
+    .search{display:flex;gap:10px}
+    .search input{flex:1;background:#0d121a;border:1px solid var(--border);border-radius:10px;padding:10px;color:var(--text);outline:none}
+    .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+    .animal{display:flex;gap:10px;padding:12px;border-radius:14px;border:1px solid var(--border);background:linear-gradient(180deg,#151a23,#12161f)}
+    .animal .badge{font-size:11px;padding:3px 8px;border-radius:999px}
+    .badge.ok{background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.35)}
+    .badge.warn{background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.35)}
+    .badge.danger{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.35)}
+    .icon{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:6px}
+    .icon.ok{background:var(--ok)} .icon.warn{background:var(--warn)} .icon.danger{background:var(--danger)}
+
+    /* KPI */
+    .kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .kpi .box{padding:12px;border-radius:12px;border:1px solid var(--border);background:#12161f}
+    .kpi .num{font-size:22px;font-weight:800}
+    .kpi .label{color:var(--muted);font-size:12px}
+
+    /* Streams & alerts */
+    .notif-stream{display:flex;flex-direction:column;gap:8px;max-height:240px;overflow:auto}
+    .notif{display:flex;gap:10px;padding:10px;border-radius:12px;border:1px solid var(--border);background:#12161f;font-size:14px}
+    .notif small{color:var(--muted)}
+    .alert-box{padding:12px;border-radius:10px;color:#fff;font-weight:bold;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+    .alert-red{background:#ef4444;animation:blink 1s infinite}
+    .alert-yellow{background:#f59e0b;animation:blink 1.3s infinite}
+    .alert-green{background:#22c55e}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+
+    /* Worker board */
+    .board .item{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+    .blink{animation:blink 1.2s infinite}
+
+    /* Phone mock */
+    .phone{width:300px;margin:auto;border:2px solid #0b0f15;border-radius:28px;padding:12px;background:#0a0f16;box-shadow:0 12px 30px rgba(0,0,0,.45)}
+    .phone .speaker{width:64px;height:6px;border-radius:6px;background:#222;margin:6px auto 10px}
+    .screen{background:#0d121a;border:1px solid var(--border);border-radius:18px;padding:12px;min-height:420px}
+    .worker{width:100%;padding:12px;border-radius:10px;font-weight:800;margin-bottom:8px;border:1px solid var(--border);cursor:pointer}
+    .worker.aktif{background:#22c55e;color:#fff}
+    .worker.izinli{background:#f59e0b;color:#fff}
+    .worker.pasif{background:#6b7280;color:#ddd;cursor:not-allowed}
+    .worker small{font-weight:600}
+
+    /* Worker modal */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:10}
+    .modal .panel{width:420px;background:#11161f;border:1px solid var(--border);border-radius:16px;padding:14px}
+    .modal .row{margin-top:8px}
+    .panel .pill{padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:#0d121a;cursor:pointer}
+    .panel .pill:disabled{opacity:.5;cursor:not-allowed}
+
+    /* Complaint */
+    .complaint-btn{position:fixed;left:16px;bottom:16px;background:#ef4444;color:#fff;padding:12px 16px;border-radius:10px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+    .complaint-box{display:none;position:fixed;left:16px;bottom:80px;width:300px;background:#11161f;border:1px solid var(--border);border-radius:12px;padding:12px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+    .complaint-box textarea{width:100%;height:110px;margin-bottom:8px;border-radius:8px;border:1px solid var(--border);background:#0b1117;color:var(--text);padding:8px}
+
+    /* Chat */
+    .whatsapp-bubble{position:fixed;right:16px;bottom:16px;width:58px;height:58px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;box-shadow:0 10px 30px rgba(0,0,0,.35);cursor:pointer;user-select:none}
+    .chat{position:fixed;right:16px;bottom:84px;width:340px;background:#11161f;border:1px solid var(--border);border-radius:16px;display:none;flex-direction:column;overflow:hidden}
+    .chat header{padding:10px 12px;background:#0c1118;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .chat .feed{padding:12px;display:flex;flex-direction:column;gap:8px;max-height:360px;overflow:auto}
+    .msg{max-width:80%;padding:10px;border-radius:12px;font-size:14px}
+    .msg.user{align-self:flex-end;background:#1e293b;border:1px solid var(--border)}
+    .msg.bot{align-self:flex-start;background:#15212b;border:1px solid var(--border)}
+    .chat .composer{display:flex;gap:6px;padding:10px;border-top:1px solid var(--border);background:#0c1118}
+    .composer input{flex:1;padding:10px;border:1px solid var(--border);border-radius:10px;background:#0b1117;color:var(--text)}
+    .composer button{padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:#1e293b;color:var(--text);cursor:pointer}
+  </style>
 </head>
 <body>
-    <h1>🚀 Sancak Vitrin Demo</h1>
-    <p>Bu dosya Railway'e başarıyla yüklendiğinde çalışacaktır.</p>
+  <header class="top">
+    <div class="brand">SANCAK ÇİFTLİK DEMO</div>
+    <div class="flag">🇹🇷</div>
+  </header>
+
+  <div class="wrap">
+    <!-- Left: Stats & Controls -->
+    <aside class="card">
+      <h3 class="title">Yönetim & İstatistik</h3>
+      <div class="row">
+        <div class="chip">Büyükbaş <b id="count-bb">0</b></div>
+        <div class="chip">Küçükbaş <b id="count-kb">0</b></div>
+        <div class="chip">Buzağı <b id="count-bz">6</b></div>
+      </div>
+      <div class="divider"></div>
+      <div class="kpi">
+        <div class="box"><div class="num" id="kpi1">0</div><div class="label">Toplam Hayvan</div></div>
+        <div class="box"><div class="num" id="kpi2">92%</div><div class="label">Sağlık Skoru</div></div>
+        <div class="box"><div class="num" id="kpi4">0</div><div class="label">Kritik</div></div>
+      </div>
+      <div class="divider"></div>
+      <div class="row">
+        <button class="btn warn" onclick="emit('Doğum Yaklaşıyor', 'Küpe #TR-019 • 36 saat')">Doğum 🔔</button>
+        <button class="btn danger" onclick="emit('Ateş Yüksek', 'Küpe #TR-042 • 39.5°C')">Ateş 🌡️</button>
+        <button class="btn acc" onclick="emit('Su Tüketimi Normal', 'Sürü sağlıklı ilerliyor')">Sağlık ✅</button>
+        <button class="btn danger" onclick="hayvanOlum()">⚠ Ölüm Bildirimi</button>
+      </div>
+    </aside>
+
+    <!-- Middle: Herd & Streams -->
+    <main class="card">
+      <h3 class="title">Operasyon</h3>
+      <div class="search">
+        <input id="q" placeholder="Arama: Küpe no / takma ad..." />
+        <button class="btn ghost" onclick="doSearch()">Ara</button>
+        <div class="row" style="margin-left:auto">
+          <button class="btn info" onclick="filterKind('all')">Tümü</button>
+          <button class="btn info" onclick="filterKind('bb')">Büyükbaş</button>
+          <button class="btn info" onclick="filterKind('kb')">Küçükbaş</button>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div id="list" class="list"></div>
+      <div class="divider"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="card">
+          <h3 class="title">Anlık Gelişmeler</h3>
+          <div id="stream" class="notif-stream"></div>
+        </div>
+        <div class="card">
+          <h3 class="title">Kritik Olaylar</h3>
+          <div id="alerts"></div>
+        </div>
+      </div>
+      <div style="height:12px"></div>
+      <div class="card">
+        <h3 class="title">İç Şikayet & Öneri Panosu</h3>
+        <div id="complaintsPanel" class="notif-stream"></div>
+      </div>
+    </main>
+
+    <!-- Right: Phone + Worker Calls Board -->
+    <aside class="right-sticky">
+      <div class="card">
+        <h3 class="title">Telefon (İşçi Paneli)</h3>
+        <div class="phone">
+          <div class="speaker"></div>
+          <div class="screen">
+            <button class="worker aktif" data-name="Mehmet" data-status="aktif" onclick="openWorker(this)">🟢 Mehmet<br><small>Aktif</small></button>
+            <button class="worker izinli" data-name="Ayşe" data-status="izinli" onclick="openWorker(this)">🟡 Ayşe<br><small>İzinde</small></button>
+            <button class="worker pasif" data-name="Ali" data-status="pasif" disabled>🔴 Ali<br><small>İşten ayrıldı</small></button>
+          </div>
+        </div>
+      </div>
+      <div style="height:10px"></div>
+      <div class="card">
+        <h3 class="title">İşçi Çağrı Panosu</h3>
+        <div id="board" class="board"></div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Worker Modal -->
+  <div class="modal" id="workerModal">
+    <div class="panel">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <h3 class="title" id="wName">İşçi</h3>
+        <button class="btn ghost" onclick="closeModal()">✕</button>
+      </div>
+      <div class="muted" id="wStatus">Durum</div>
+      <div class="divider"></div>
+      <div class="row">
+        <button class="pill" id="btnDemirci" onclick="sendCall('Demirci Çağır','yellow')">Demirci</button>
+        <button class="pill" id="btnElektrik" onclick="sendCall('Elektrikçi Çağır','yellow')">Elektrikçi</button>
+        <button class="pill" id="btnTemizlik" onclick="sendCall('Temizlik Talebi','green')">Temizlik</button>
+        <button class="pill" id="btnVet" onclick="sendCall('Veteriner Çağır','red')">Veteriner</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Complaint box (input) -->
+  <div class="complaint-btn" onclick="toggleComplaint()">📢 Şikayet / Öneri</div>
+  <div class="complaint-box" id="complaintBox">
+    <h3>Şikayet / Öneri (İç Ekip)</h3>
+    <textarea id="complaintText" placeholder="İşçi/ekip notu... (müşteri görmez)"></textarea>
+    <button class="btn acc" onclick="sendComplaint()">Gönder</button>
+  </div>
+
+  <!-- Chat -->
+  <div class="whatsapp-bubble" id="waBubble" title="Müşteri Temsilcisi">💬</div>
+  <div class="chat" id="chatBox" aria-hidden="true">
+    <header>
+      <div><b>Müşteri Temsilcisi</b><div class="muted" style="font-size:12px">WhatsApp tarzı sohbet</div></div>
+      <button class="btn ghost" onclick="toggleChat()">✕</button>
+    </header>
+    <div class="feed" id="chatFeed"></div>
+    <div class="composer">
+      <input id="chatInput" placeholder="Mesaj yaz..." onkeydown="if(event.key==='Enter'){sendMsg()}">
+      <button onclick="sendMsg()">Gönder</button>
+    </div>
+  </div>
+
+  <script>
+    // --- DATA ---
+    const animals = [
+      {id:'TR-001', ad:'Kara Kız', tur:'bb', durum:'ok', not:'Süt verimi %102'},
+      {id:'TR-002', ad:'Akbaş', tur:'bb', durum:'ok', not:'Adım sayısı normal'},
+      {id:'TR-019', ad:'Boncuk', tur:'bb', durum:'warn', not:'Doğum 36 saat'},
+      {id:'TR-042', ad:'Pars', tur:'bb', durum:'danger', not:'39.5°C ateş'},
+      {id:'TR-103', ad:'Fıstık', tur:'kb', durum:'ok', not:'Kuzu sağlıklı'},
+      {id:'TR-118', ad:'Zeytin', tur:'kb', durum:'ok', not:'Su tüketimi iyi'},
+      {id:'TR-119', ad:'Mavi', tur:'kb', durum:'warn', not:'Adım düşüşü %12'},
+      {id:'TR-133', ad:'Bulut', tur:'kb', durum:'ok', not:'Aşı güncel'},
+      {id:'TR-151', ad:'Pamuk', tur:'bb', durum:'ok', not:'Rumen hareketi iyi'},
+      {id:'TR-177', ad:'Şimşek', tur:'bb', durum:'warn', not:'Yem Tüketimi -%8'},
+      {id:'TR-182', ad:'Gümüş', tur:'kb', durum:'ok', not:'Kilo +0.7kg/hafta'},
+      {id:'TR-199', ad:'Nazlı', tur:'bb', durum:'ok', not:'Kalp ritmi normal'}
+    ];
+    const listEl = document.getElementById('list');
+    const streamEl = document.getElementById('stream');
+    const qEl = document.getElementById('q');
+    const counts = {bb:0,kb:0,bz:6};
+    let currentFilter='all';
+
+    function renderList(filter='all', query=''){
+      listEl.innerHTML = '';
+      let data = animals.filter(a => filter==='all'||a.tur===filter);
+      if(query){
+        const q = query.toLowerCase();
+        data = data.filter(a => (a.id+a.ad).toLowerCase().includes(q));
+      }
+      counts.bb = animals.filter(a=>a.tur==='bb').length;
+      counts.kb = animals.filter(a=>a.tur==='kb').length;
+      document.getElementById('count-bb').innerText = counts.bb;
+      document.getElementById('count-kb').innerText = counts.kb;
+      document.getElementById('count-bz').innerText = counts.bz;
+      document.getElementById('kpi1').innerText = animals.length;
+      document.getElementById('kpi4').innerText = animals.filter(a=>a.durum==='danger').length;
+
+      data.forEach(a=>{
+        const el = document.createElement('div');
+        el.className='animal';
+        el.innerHTML = `
+          <div style="width:10px"><div class="icon ${a.durum}" title="${a.durum}"></div></div>
+          <div style="flex:1">
+            <div style="display:flex;justify-content:space-between;gap:8px">
+              <div><b>${a.ad}</b> <span class="muted">• ${a.id}</span></div>
+              <span class="badge ${a.durum}">${a.tur==='bb'?'Büyükbaş':'Küçükbaş'}</span>
+            </div>
+            <div class="muted" style="margin-top:6px">${a.not}</div>
+            <div class="row" style="margin-top:8px">
+              <button class="btn acc" onclick="emit('Sağlık Kontrolü', '${a.id} için rutin kontrol açıldı')">Kontrol Aç</button>
+              <button class="btn warn" onclick="emit('Takip', '${a.id} yakından izlemeye alındı')">Takip</button>
+              <button class="btn danger" onclick="emit('Acil Veteriner', '${a.id} için çağrı oluşturuldu')">Acil Vet</button>
+            </div>
+          </div>`;
+        listEl.appendChild(el);
+      });
+    }
+    function filterKind(kind){ currentFilter=kind; renderList(currentFilter, qEl.value); }
+    function doSearch(){ renderList(currentFilter, qEl.value); }
+
+    // --- Notifications (no push to chat) ---
+    function emit(title, msg){
+      const el = document.createElement('div');
+      el.className='notif';
+      const time = new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+      el.innerHTML = `<div><b>${title}</b><div>${msg}</div><small>${time}</small></div>`;
+      streamEl.prepend(el);
+    }
+
+    // --- Critical alerts: animal death ---
+    function hayvanOlum(){
+      const alerts=document.getElementById('alerts');
+      const time=new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+      const box=document.createElement('div');
+      box.className='alert-box alert-red';
+      box.innerHTML=`<span>⚠️ Hayvan Ölümü: TR-042 Pars (${time})</span> <button class="btn ghost" onclick="this.parentNode.remove()">Kapat</button>`;
+      alerts.prepend(box);
+      emit('Kritik Olay', 'Hayvan ölümü bildirildi: TR-042');
+    }
+
+    // --- Internal complaints panel ---
+    function toggleComplaint(){
+      const box=document.getElementById("complaintBox");
+      box.style.display=box.style.display==="block"?"none":"block";
+    }
+    function sendComplaint(){
+      const txt=document.getElementById("complaintText").value.trim();
+      if(!txt) return alert("Lütfen bir şey yazın!");
+      const p=document.getElementById("complaintsPanel");
+      const time=new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+      const el=document.createElement('div');
+      el.className='notif';
+      el.innerHTML=`<div><b>İç Bildirim</b><div>${txt}</div><small>${time}</small></div><button class="btn ghost" onclick="this.parentNode.remove()">✔</button>`;
+      p.prepend(el);
+      document.getElementById("complaintText").value="";
+      toggleComplaint();
+    }
+
+    // --- Phone (worker) interactions ---
+    let activeWorker = null; // {name, status}
+    function openWorker(btn){
+      const status = btn.dataset.status;
+      const name = btn.dataset.name;
+      if(status==='pasif'){ return; } // cannot open
+      activeWorker = {name, status};
+      document.getElementById('wName').textContent = name;
+      document.getElementById('wStatus').textContent = (status==='izinli'?'Durum: Yıllık izin':'Durum: Aktif');
+      // enable/disable action pills
+      const disabled = (status!=='aktif'); // izinli -> disabled
+      ['btnDemirci','btnElektrik','btnTemizlik','btnVet'].forEach(id=>{
+        const el=document.getElementById(id);
+        el.disabled = disabled;
+      });
+      document.getElementById('workerModal').style.display='flex';
+    }
+    function closeModal(){ document.getElementById('workerModal').style.display='none'; activeWorker=null; }
+    function sendCall(type, level){
+      if(!activeWorker) return;
+      // add to board
+      addCallToBoard(activeWorker.name, type, level, activeWorker.status);
+      // also log to stream
+      emit('İşçi Çağrısı', `${activeWorker.name} → ${type}`);
+      closeModal();
+    }
+
+    function addCallToBoard(worker, type, level, status){
+      const board=document.getElementById('board');
+      const row=document.createElement('div'); row.className='item blink';
+      const time=new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+      // color tag by level
+      let color = '#22c55e';
+      if(level==='yellow') color='#f59e0b';
+      if(level==='red') color='#ef4444';
+      // status badge
+      let statusTxt = status==='izinli' ? ' (İzinde)' : '';
+      row.innerHTML = `<div><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${color};margin-right:8px"></span><b>${worker}</b>${statusTxt} → ${type} <small class="muted" style="margin-left:6px">${time}</small></div><button class="btn ghost" onclick="this.parentNode.remove()">✔</button>`;
+      board.prepend(row);
+    }
+
+    // --- Chat ---
+    const waBubble=document.getElementById('waBubble');
+    const chatBox=document.getElementById('chatBox');
+    const chatFeed=document.getElementById('chatFeed');
+    const chatInput=document.getElementById('chatInput');
+    function toggleChat(force){
+      const show=typeof force==='boolean'?force:chatBox.style.display==='none';
+      chatBox.style.display=show?'flex':'none';
+      chatBox.setAttribute('aria-hidden',show?'false':'true');
+      if(show && !chatFeed.dataset.boot){
+        pushBot("✨ Hoşgeldiniz SANCAK MARKAMIZA! Size nasıl yardımcı olabilirim?");
+        chatFeed.dataset.boot='1';
+      }
+    }
+    waBubble.addEventListener('click',()=>toggleChat(true));
+    function pushUser(text){const el=document.createElement('div');el.className='msg user';el.textContent=text;chatFeed.appendChild(el);chatFeed.scrollTop=chatFeed.scrollHeight;}
+    function pushBot(text){const el=document.createElement('div');el.className='msg bot';el.textContent=text;chatFeed.appendChild(el);chatFeed.scrollTop=chatFeed.scrollHeight;}
+    function sendMsg(){const txt=chatInput.value.trim();if(!txt)return;pushUser(txt);chatInput.value='';setTimeout(()=>{pushBot("Müşteri temsilcisi cevabı: "+txt)},500);}
+
+    // Init
+    renderList();
+  </script>
 </body>
 </html>
